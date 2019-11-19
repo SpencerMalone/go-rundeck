@@ -20,6 +20,7 @@ type JobYAMLDetailResponse struct {
 	MultipleExecutions bool                     `yaml:"multipleExecutions"`
 	Name               string                   `yaml:"name"`
 	NodeFilterEditable bool                     `yaml:"nodeFilterEditable"`
+	NodePreselected    bool                     `yaml:"nodesSelectedByDefault"`
 	Options            []*JobOptionYAMLResponse `yaml:"options,omitempty"`
 	ScheduleEnabled    bool                     `yaml:"scheduleEnabled"`
 	UUID               string                   `yaml:"uuid"`
@@ -29,14 +30,27 @@ type JobYAMLDetailResponse struct {
 func (a JobYAMLDetailResponse) minVersion() int  { return AbsoluteMinimumVersion }
 func (a JobYAMLDetailResponse) maxVersion() int  { return CurrentVersion }
 func (a JobYAMLDetailResponse) deprecated() bool { return false }
+func (a *JobYAMLDetailResponse) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type rawJob JobYAMLDetailResponse
+	raw := rawJob{
+		NodePreselected: true,
+	}
+	if err := unmarshal(&raw); err != nil {
+		return err
+	}
+
+	*a = JobYAMLDetailResponse(raw)
+	return nil
+}
 
 // JobOptionYAMLResponse represents a jobs options in a yaml job definition response
 type JobOptionYAMLResponse struct {
-	Description string `yaml:"description,omitempty"`
-	Name        string `yaml:"name"`
-	Regex       string `yaml:"regex,omitempty"`
-	Required    bool   `yaml:"required"`
-	Value       string `yaml:"value,omitempty"`
+	Description string   `yaml:"description,omitempty"`
+	Name        string   `yaml:"name"`
+	Regex       string   `yaml:"regex,omitempty"`
+	Required    bool     `yaml:"required"`
+	Value       string   `yaml:"value,omitempty"`
+	Values      []string `yaml:"values,omitempty"`
 }
 
 func (a JobOptionYAMLResponse) minVersion() int  { return AbsoluteMinimumVersion }
