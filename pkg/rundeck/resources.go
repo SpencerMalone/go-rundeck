@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/lusis/go-rundeck/pkg/rundeck/responses"
@@ -22,12 +23,12 @@ type ResourceDetail struct {
 
 // ListResourcesForProject returns resources for a project (usually nodes)
 // http://rundeck.org/docs/api/index.html#list-resources-for-a-project
-func (c *Client) ListResourcesForProject(p string) (*Resources, error) {
+func (c *Client) ListResourcesForProject(p string, filter string) (*Resources, error) {
 	if err := c.checkRequiredAPIVersion(responses.ResourceCollectionResponse{}); err != nil {
 		return nil, err
 	}
 	ls := &Resources{}
-	data, err := c.httpGet("project/"+p+"/resources", requestJSON(), requestExpects(200))
+	data, err := c.httpGet("project/"+p+"/resources?filter=" + url.QueryEscape(filter), requestJSON(), requestExpects(200))
 	if err != nil {
 		return nil, err
 	}
